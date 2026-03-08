@@ -719,7 +719,6 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
             input: messages,
             model,
             text: { format: { strict: true, type: 'json_schema', ...processedSchema } },
-            user: options?.user,
           },
           { headers: options?.headers, signal: options?.signal },
         );
@@ -955,7 +954,6 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
         store: false,
         stream: !isStreaming ? undefined : isStreaming,
         tools: tools?.map((tool) => this.convertChatCompletionToolToResponseTool(tool)),
-        user: options?.user,
       } as OpenAI.Responses.ResponseCreateParamsStreaming | OpenAI.Responses.ResponseCreateParams;
 
       if (debugParams?.responses?.()) {
@@ -1072,7 +1070,6 @@ export const createOpenAICompatibleRuntime = <T extends Record<string, any> = an
             model,
             tool_choice: 'required',
             tools: tools!.map((tool) => this.convertChatCompletionToolToResponseTool(tool)),
-            user: options?.user,
           },
           { headers: options?.headers, signal: options?.signal },
         );

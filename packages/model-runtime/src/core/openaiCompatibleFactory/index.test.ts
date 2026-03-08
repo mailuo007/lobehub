@@ -525,6 +525,47 @@ describe('LobeOpenAICompatibleFactory', () => {
         );
       });
 
+      it('should not add user to responses payload when noUserId is true', async () => {
+        const LobeMockProvider = createOpenAICompatibleRuntime({
+          baseURL: 'https://api.mistral.ai/v1',
+          chatCompletion: {
+            noUserId: true,
+            useResponse: true,
+          },
+          provider: ModelProvider.Mistral,
+        });
+
+        const instance = new LobeMockProvider({ apiKey: 'test' });
+        const mockCreateMethod = vi.spyOn(instance['client'].responses, 'create').mockResolvedValue(
+          {
+            toReadableStream: () =>
+              new ReadableStream({
+                start(controller) {
+                  controller.close();
+                },
+              }),
+          } as any,
+        );
+
+        try {
+          await instance.chat(
+            {
+              messages: [{ content: 'Hello', role: 'user' }],
+              model: 'open-mistral-7b',
+              temperature: 0,
+            },
+            { user: 'testUser' },
+          );
+        } catch {}
+
+        expect(mockCreateMethod).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            user: 'testUser',
+          }),
+          expect.anything(),
+        );
+      });
+
       it('should add user to payload when noUserId is not set in chatCompletion', async () => {
         const LobeMockProvider = createOpenAICompatibleRuntime({
           baseURL: 'https://api.mistral.ai/v1',
@@ -1607,7 +1648,6 @@ describe('LobeOpenAICompatibleFactory', () => {
           model: payload.model,
           // @ts-ignore
           text: { format: { strict: true, type: 'json_schema', ...payload.schema } },
-          user: options.user,
         },
         { headers: options.headers, signal: options.signal },
       );
